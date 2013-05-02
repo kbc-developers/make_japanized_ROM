@@ -282,15 +282,15 @@ function japanize_process()
 	//copy to work from user seleced zip here
 
 	getBuildProp(USER_ZIP,USER_DIR);
-	replaceProp(WORK_BUILD_PROP,WORK_BUILD_PROP+"_build.after");	//debug
+	replaceProp(WORK_BUILD_PROP,WORK_BUILD_PROP);	//debug
 
 	getUpdaterScript(USER_ZIP,USER_DIR);
-	replaceUpdateScript(WORK_UPDATER_SCRIPT,WORK_UPDATER_SCRIPT+"_build.after");
+	replaceUpdateScript(WORK_UPDATER_SCRIPT,WORK_UPDATER_SCRIPT);
 
 	getFramworkResApk(USER_ZIP,USER_DIR);
 	decodeFramworkResApk(WORK_FRAMEWORK_RES_APK,TMP_FRAMEWORK_DIR);
 	
-	addFelicaResouceItem(TMP_ARRAYS_XML,TMP_ARRAYS_XML+"_build.after")
+	addFelicaResouceItem(TMP_ARRAYS_XML,TMP_ARRAYS_XML)
 
 	buildFramworkResApk(TMP_FRAMEWORK_DIR,TMP_FRAMEWORK_APK,WORK_FRAMEWORK_RES_APK)
 
