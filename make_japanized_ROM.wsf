@@ -5,7 +5,7 @@
 		<!-- vbs util -->
 		<script language="VBScript" src="tools/japanize_util.vbs"/>
 		<!-- japanize configration -->
-		<script language="JScript" src="tools/japanize_config_sc02e.js"/>
+		<script language="JScript" src="diff/sc02e/config_sc02e.js"/>
 		<!-- japanize process -->
 		<script language="JScript" src="tools/japanize_main.js"/>
 		<!-- main process -->

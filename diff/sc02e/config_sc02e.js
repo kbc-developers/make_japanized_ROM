@@ -21,3 +21,6 @@ var UPDATE_SCRIPT_CONF = new Array(
 	//-------------------------------------
 	"DUMMY","DUMMY"//<-ÅŒã‚ÍƒJƒ“ƒ}•t‚¯‚È‚¢
 );
+
+var DEVICE_NAME="sc02e";
+var DEVICE_DIR="sc02e";

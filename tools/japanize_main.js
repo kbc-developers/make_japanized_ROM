@@ -39,9 +39,10 @@ var ADSAVECREATEOVERWRITE = 2; // Ç†ÇÈèÍçáÇÕè„èëÇ´
 Memo:
 <any_place>/  = SCRIPT_DIR
   + diff/
-  |  + system/
-  |  |  + xxxx
-  |  + boot.img
+  |  +XXXX/   ( this depend on device name)
+  |    + system/
+  |    |  + xxxx
+  |    + boot.img
   + tools/
   |  +7z.exe
   |  +japanize_config_xxxx.js
@@ -62,7 +63,7 @@ Memo:
 */
 // Folder definition
 var SCRIPT_DIR	= String(WScript.ScriptFullName).replace(WScript.ScriptName,"");
-var DIFF_DIR	= objFso.BuildPath(SCRIPT_DIR	, "diff");
+
 
 //tool path
 var TOOL_DIR	= objFso.BuildPath(SCRIPT_DIR	, "tools");
@@ -94,6 +95,11 @@ var WORK_FRAMEWORK_RES_APK	= objFso.BuildPath(USER_DIR				, FRAMEWORK_RES				).r
 var TMP_FRAMEWORK_DIR		= objFso.BuildPath(TEMP_DIR				, "framework-res"			).replace(new RegExp("\\/","g"),"\\");
 var TMP_ARRAYS_XML			= objFso.BuildPath(TMP_FRAMEWORK_DIR	, "res/values/arrays.xml"	).replace(new RegExp("\\/","g"),"\\");
 var TMP_FRAMEWORK_APK		= objFso.BuildPath(TEMP_DIR				, "framework-res.apk"		).replace(new RegExp("\\/","g"),"\\");
+
+//------diff
+var DIFF_DIR= objFso.BuildPath(SCRIPT_DIR	, "diff");
+var DIFF_DIR=objFso.BuildPath(DIFF_DIR,DEVICE_DIR)
+
 
 SetCurrDir(SCRIPT_DIR);
 //get debug parameter
@@ -356,12 +362,12 @@ function japanize_process()
 
 	buildFramworkResApk(TMP_FRAMEWORK_DIR,TMP_FRAMEWORK_APK,WORK_FRAMEWORK_RES_APK);
 
-	//copy diffs to temp here
-		//@todo
+	//apply diff files
+	AddFileToZip(USER_ZIP,DIFF_DIR+"\\*");
+	//apply japanize files
 	AddFileToZip(USER_ZIP,USER_DIR+"\\*");
-		
 
-	var outzip = objFso.BuildPath(OUT_DIR, zip_name+"-JP.zip");
+	var outzip = objFso.BuildPath(OUT_DIR, zip_name+"-converted-"+ro_product+".zip");
 	signZip(USER_ZIP,outzip)
 
 	//cleanup
