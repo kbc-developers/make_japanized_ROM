@@ -69,6 +69,10 @@ var TOOL_DIR	= objFso.BuildPath(SCRIPT_DIR	, "tools");
 var EXE_7z		= objFso.BuildPath(TOOL_DIR		, "7z.exe");
 var APKTOOL		= "java -jar " + objFso.BuildPath(TOOL_DIR		, "apktool.jar");
 
+var SIGNAPK_JAR			= "java -jar " + objFso.BuildPath(TOOL_DIR		, "signapk.jar");
+var TESTKEY_X509_PEM	= objFso.BuildPath(TOOL_DIR		, "testkey.x509.pem");
+var TESTKEY_PK8			= objFso.BuildPath(TOOL_DIR		, "testkey.pk8");
+
 //working path
 var OUT_DIR		= objFso.BuildPath(SCRIPT_DIR	, "out");
 var WORK_DIR	= objFso.BuildPath(OUT_DIR		, "work");
@@ -189,8 +193,8 @@ function AddFileToZip(zip,src)
 {
 	///@todo
 	//var cmd = EXE_7z +" a " + zip + " " + src + " -r";
-	var cmd = EXE_7z +" u " + zip + " " + src + " -r";
-	//run_command(cmd);
+	var cmd = EXE_7z +" u " + zip + " " + src + " -r -ssc";
+	run_command(cmd);
 }
 //------------------------------------------------------------------
 /*zipを指定して、指定パスのファイルのみ取り出す処理*/
@@ -250,19 +254,18 @@ function buildFramworkResApk(src_dir,tmp_apk,dst_apk)
 	cmd = EXE_7z +" u -tzip -mx=0 " + dst_apk + " " + resources;
 
 	run_command(cmd);
-	//objFso.DeleteFile(tmp_apk);
 }
 //------------------------------------------------------------------
 /*signed zip処理*/
 function signZip(src,dst)
 {
-	///@todo
-
+	var cmd = SIGNAPK_JAR + " " + TESTKEY_X509_PEM + " " + TESTKEY_PK8 + " " +src+ " " + dst;
+	run_command(cmd);
 }
 
 //=======================================================================================
 //
-//	tool Access
+//	other
 //
 //=======================================================================================
 function show_copyright()
@@ -271,6 +274,56 @@ function show_copyright()
 
 }
 
+
+function prepear_work()
+{
+
+	if (objWshUnnamed.Count == 0)
+	{	WScript.Echo("ERROR! Please input zip");
+		return "";
+	}
+	var rom_zip = objWshUnnamed.Item(0);
+
+	if(!objFso.FileExists(rom_zip))
+	{
+		WScript.Echo("ERROR! not exist rom");
+		return "";
+	}
+
+	var ext = objFso.GetExtensionName(rom_zip);
+	if(ext != "zip" )
+	{
+		WScript.Echo("ERROR! not .zip file");
+		return "";
+	}
+
+	//Init Dir
+	cleanup_work();
+	if(objFso.FolderExists(WORK_DIR))
+	{
+		objFso.DeleteFolder(WORK_DIR,true);
+	}
+	objFso.CreateFolder(WORK_DIR);
+	objFso.CreateFolder(USER_DIR);
+	
+	objFso.CopyFile(rom_zip,USER_ZIP,true);
+
+//	return objFso.GetFileName(rom_zip);
+
+	var zipName = objFso.GetFileName(rom_zip);
+	
+
+	return zipName.replace("."+ext,"");
+
+}
+
+function cleanup_work()
+{
+	if(objFso.FolderExists(WORK_DIR))
+	{
+		objFso.DeleteFolder(WORK_DIR,true);
+	}
+}
 //=======================================================================================
 //
 //	main process
@@ -281,6 +334,15 @@ function japanize_process()
 {
 	//copy to work from user seleced zip here
 
+	var zip_name = prepear_work();
+	
+	if(zip_name=="")
+	{
+		cleanup_work();
+		WScript.quit();
+	}
+	DebugPrint(zip_name);
+
 	getBuildProp(USER_ZIP,USER_DIR);
 	replaceProp(WORK_BUILD_PROP,WORK_BUILD_PROP);	//debug
 
@@ -290,14 +352,18 @@ function japanize_process()
 	getFramworkResApk(USER_ZIP,USER_DIR);
 	decodeFramworkResApk(WORK_FRAMEWORK_RES_APK,TMP_FRAMEWORK_DIR);
 	
-	addFelicaResouceItem(TMP_ARRAYS_XML,TMP_ARRAYS_XML)
+	addFelicaResouceItem(TMP_ARRAYS_XML,TMP_ARRAYS_XML);
 
-	buildFramworkResApk(TMP_FRAMEWORK_DIR,TMP_FRAMEWORK_APK,WORK_FRAMEWORK_RES_APK)
+	buildFramworkResApk(TMP_FRAMEWORK_DIR,TMP_FRAMEWORK_APK,WORK_FRAMEWORK_RES_APK);
 
 	//copy diffs to temp here
+		//@todo
+	AddFileToZip(USER_ZIP,USER_DIR+"\\*");
 		
-	//AddFileToZip(zip,src);
 
-	//signZip(src,dst)
+	var outzip = objFso.BuildPath(OUT_DIR, zip_name+"-JP.zip");
+	signZip(USER_ZIP,outzip)
 
+	//cleanup
+	cleanup_work();
 }
