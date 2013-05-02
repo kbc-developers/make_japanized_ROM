@@ -56,8 +56,20 @@ Function run_command(cmd)
 	objWShell.CurrentDirectory = WorkDir
 	DebugPrint "CMD= " & cmd
 	'objWShell.Run cmd, vbNormalFocus, False
-	objWShell.Run cmd, vbNormalFocus, True
+	'objWShell.Run cmd, vbNormalFocus, True
 
+	Set objExec = objWShell.Exec(cmd)
+	Do While objExec.Status = 0
+		Do Until objExec.StdOut.AtEndOfStream
+			DebugPrint objExec.StdOut.ReadLine
+		Loop
+	    WScript.Sleep 100
+	Loop
+ 
+ 	Do Until objExec.StdOut.AtEndOfStream
+		DebugPrint objExec.StdOut.ReadLine
+	Loop
+ 
 	objWShell = none
 End Function
 '========================================================================
