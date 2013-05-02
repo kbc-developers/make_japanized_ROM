@@ -1,6 +1,7 @@
 '========================================================================
 DEBUG_PRINT=0
 DEBUG_PRINT_GUI=0
+WorkDir=""
 '========================================================================
 Function DebugPrint(string)
 	if DEBUG_PRINT=1 then
@@ -45,3 +46,22 @@ function GetArgOnOff(objWshNamed,name,def_val)
 	GetArgOnOff = getOnOff(GetArgString(objWshNamed,name,def_val),def)
 End Function
 
+'========================================================================
+' JScriptで外部コマンドがうまく同期処理にならなかったのでVBSで
+Function run_command(cmd)
+	Dim objWShell
+
+	Set objWShell = CreateObject("WScript.Shell")
+
+	objWShell.CurrentDirectory = WorkDir
+	DebugPrint "CMD= " & cmd
+	'objWShell.Run cmd, vbNormalFocus, False
+	objWShell.Run cmd, vbNormalFocus, True
+
+	objWShell = none
+End Function
+'========================================================================
+' JScriptでカレントディレクトリ変更できないようなので
+Function SetCurrDir(dir)
+	WorkDir = dir
+End Function
