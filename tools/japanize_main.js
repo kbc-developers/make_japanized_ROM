@@ -152,7 +152,7 @@ function addFelicaResouceItem(src,dst)
 
 function getTextFile( fileName ,encoding)
 {
-	var sr = new ActiveXObject("ADODB.Stream");
+	var inputStream = new ActiveXObject("ADODB.Stream");
 	inputStream.Type = ADTYPETEXT;
 	inputStream.charset = encoding;
 	inputStream.Open();
