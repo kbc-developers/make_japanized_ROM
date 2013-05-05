@@ -10,6 +10,15 @@ var ro_build_description	="t0ltedcm-user 4.1.1 JRO03C SC02EOMALJF release-keys";
 var ro_build_fingerprint	="samsung/SC-02E/SC-02E:4.1.1/JRO03C/SC02EOMALJF:user/release-keys";
 var ro_factory_model		="SGH-N025";
 
+var BUILD_PROP_ADD_CONF = new Array(
+	"ro.config.libemoji"	,"libemoji_docomo.so",
+	"com.qc.hdmi_out"		,"true",
+	"ro.hdmi.enablet"		,"true",
+	//-------------------------------------
+	"DUMMY","DUMMY"//<-ÅŒã‚ÍƒJƒ“ƒ}•t‚¯‚È‚¢
+);
+
+
 var UPDATE_SCRIPT_CONF = new Array(
 	"GT-N7105"	,"SC-02",
 	"t0lte"		,"sc02e",

@@ -40,9 +40,11 @@ Memo:
 <any_place>/  = SCRIPT_DIR
   + diff/
   |  +XXXX/   ( this depend on device name)
-  |    + system/
-  |    |  + xxxx
-  |    + boot.img
+  |    + files/
+  |    |  + system/
+  |    |  |  + xxxx
+  |    |  + boot.img
+  |    +config_xxxx.js
   + tools/
   |  +7z.exe
   |  +japanize_config_xxxx.js
@@ -129,7 +131,15 @@ function replaceProp(src,dst)
 
 	val =val.replace(new RegExp("ro.config.*=.*","g")			,"");
 	val	+= "\n# Add \n";
-	val	+= "ro.config.libemoji=libemoji_docomo.so\n";
+//	val	+= "ro.config.libemoji=libemoji_docomo.so\n";
+	for(i=0;i<(BUILD_PROP_ADD_CONF.length/2 -1);i++)	//exclude dummy line
+	{
+		DebugPrint( "[add prop] :"+BUILD_PROP_ADD_CONF[i*2] + " -> "+ BUILD_PROP_ADD_CONF[i*2 +1]  );
+
+		val =val.replace(new RegExp(BUILD_PROP_ADD_CONF[i*2]+"=.*","g"),"");
+		val	+= BUILD_PROP_ADD_CONF[i*2]+"="+BUILD_PROP_ADD_CONF[i*2 +1]+"\n";
+	}
+
 
 	outputTextFile(dst,val,"euc-jp");
 }
@@ -304,10 +314,13 @@ function prepear_work()
 	}
 
 	//Init Dir
-	cleanup_work();
-	if(objFso.FolderExists(WORK_DIR))
+	if(!objFso.FolderExists(OUT_DIR))
 	{
-		objFso.DeleteFolder(WORK_DIR,true);
+		objFso.CreateFolder(OUT_DIR);
+	}
+	else
+	{
+		cleanup_work();
 	}
 	objFso.CreateFolder(WORK_DIR);
 	objFso.CreateFolder(USER_DIR);
@@ -363,7 +376,7 @@ function japanize_process()
 	buildFramworkResApk(TMP_FRAMEWORK_DIR,TMP_FRAMEWORK_APK,WORK_FRAMEWORK_RES_APK);
 
 	//apply diff files
-	AddFileToZip(USER_ZIP,DIFF_DIR+"\\*");
+	AddFileToZip(USER_ZIP,DIFF_DIR+"\\files\\*");
 	//apply japanize files
 	AddFileToZip(USER_ZIP,USER_DIR+"\\*");
 
