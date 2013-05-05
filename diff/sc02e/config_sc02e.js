@@ -1,24 +1,39 @@
 //==================================================================
 // Config for SC02E
-var ro_product_model	="SC-02E";
-var ro_product_brand	="samsung";
-var ro_product_name		="SC-02E";
-var ro_product_device	="sc02e";
-var ro_product			="sc02e";
+/*---------------------------------------------------------------------------**
+	for japanize internal
+**---------------------------------------------------------------------------*/
+var DEVICE_NAME="sc02e";
+var DEVICE_DIR="sc02e";
+/*---------------------------------------------------------------------------**
+	for Build Prop
+**---------------------------------------------------------------------------*/
+var BUILD_PROP_REP_CONF = new Array(
+	"ro.product.model"		,"SC-02E",
+	"ro.product.brand"		,"samsung",
+	"ro.product.name"		,"SC-02E",
+	"ro.product.device"		,"sc02e",
+	"ro.product"			,"sc02e",
+	"ro.build.description"	,"t0ltedcm-user 4.1.1 JRO03C SC02EOMALJF release-keys",
+	"ro.build.fingerprint"	,"samsung/SC-02E/SC-02E:4.1.1/JRO03C/SC02EOMALJF:user/release-keys",
+	"ro.factory.model"		,"SGH-N025",
 
-var ro_build_description	="t0ltedcm-user 4.1.1 JRO03C SC02EOMALJF release-keys";
-var ro_build_fingerprint	="samsung/SC-02E/SC-02E:4.1.1/JRO03C/SC02EOMALJF:user/release-keys";
-var ro_factory_model		="SGH-N025";
-
-var BUILD_PROP_ADD_CONF = new Array(
-	"ro.config.libemoji"	,"libemoji_docomo.so",
-	"com.qc.hdmi_out"		,"true",
-	"ro.hdmi.enablet"		,"true",
+	"ro.config.*"			,"",
 	//-------------------------------------
 	"DUMMY","DUMMY"//<-最後はカンマ付けない
 );
 
+//add to last line
+var BUILD_PROP_ADD_CONF = new Array(
+	"ro.config.libemoji"	,"libemoji_docomo.so",
 
+	//-------------------------------------
+	"DUMMY","DUMMY"//<-最後はカンマ付けない
+);
+
+/*---------------------------------------------------------------------------**
+	for updeter-script
+**---------------------------------------------------------------------------*/
 var UPDATE_SCRIPT_CONF = new Array(
 	"GT-N7105"	,"SC-02",
 	"t0lte"		,"sc02e",
@@ -30,6 +45,3 @@ var UPDATE_SCRIPT_CONF = new Array(
 	//-------------------------------------
 	"DUMMY","DUMMY"//<-最後はカンマ付けない
 );
-
-var DEVICE_NAME="sc02e";
-var DEVICE_DIR="sc02e";

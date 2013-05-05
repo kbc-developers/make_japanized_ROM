@@ -118,24 +118,17 @@ function replaceProp(src,dst)
 	var val = getTextFile( src ,"euc-jp");
 	val =String(val).replace(new RegExp(" *= ","g")	,"=");	//propíËã`ÇÃêÆå`
 
+	for(i=0;i<(BUILD_PROP_REP_CONF.length/2 -1);i++)	//exclude dummy line
+	{
+		DebugPrint( "[replace prop] :"+BUILD_PROP_REP_CONF[i*2] + " -> "+ BUILD_PROP_REP_CONF[i*2 +1]  );
 
-	val =val.replace(new RegExp("ro.product.model=.*", "g")		,"ro.product.model="+ro_product_model);
-	val =val.replace(new RegExp("ro.product.brand=.*", "g")		,"ro.product.brand="+ro_product_brand);
-	val =val.replace(new RegExp("ro.product.name=.*", "g")		,"ro.product.name="+ro_product_name);
-	val =val.replace(new RegExp("ro.product.device=.*", "g")	,"ro.product.device="+ro_product_device);
-	val =val.replace(new RegExp("ro.product=.*", "g")			,"ro.product="+ro_product);
+		val =val.replace(new RegExp(BUILD_PROP_REP_CONF[i*2]+"=.*","g"),
+							BUILD_PROP_REP_CONF[i*2]+"="+BUILD_PROP_REP_CONF[i*2 +1]);
+	}
 
-	val =val.replace(new RegExp("ro.build.description=.*", "g")	,"ro.build.description="+ro_build_description);
-	val =val.replace(new RegExp("ro.build.fingerprint=.*", "g")	,"ro.build.fingerprint="+ro_build_fingerprint);
-	val =val.replace(new RegExp("ro.factory.model=.*", "g")		,"ro.factory.model="+ro_factory_model);
-
-	val =val.replace(new RegExp("ro.config.*=.*","g")			,"");
 	val	+= "\n# Add \n";
-//	val	+= "ro.config.libemoji=libemoji_docomo.so\n";
 	for(i=0;i<(BUILD_PROP_ADD_CONF.length/2 -1);i++)	//exclude dummy line
 	{
-		DebugPrint( "[add prop] :"+BUILD_PROP_ADD_CONF[i*2] + " -> "+ BUILD_PROP_ADD_CONF[i*2 +1]  );
-
 		val =val.replace(new RegExp(BUILD_PROP_ADD_CONF[i*2]+"=.*","g"),"");
 		val	+= BUILD_PROP_ADD_CONF[i*2]+"="+BUILD_PROP_ADD_CONF[i*2 +1]+"\n";
 	}
@@ -380,7 +373,7 @@ function japanize_process()
 	//apply japanize files
 	AddFileToZip(USER_ZIP,USER_DIR+"\\*");
 
-	var outzip = objFso.BuildPath(OUT_DIR, zip_name+"-converted-"+ro_product+".zip");
+	var outzip = objFso.BuildPath(OUT_DIR, zip_name+"-converted-"+DEVICE_NAME+".zip");
 	signZip(USER_ZIP,outzip)
 
 	//cleanup
