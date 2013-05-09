@@ -16,7 +16,52 @@ Function DebugPrint(string)
 		end If
 	end if
 End Function
+'========================================================================
+Function logPrint2(string)
+	if UCase(Right(WScript.FullName, 11)) = "WSCRIPT.EXE" Then
+	'GUI‹N“®‚Ìê‡
+		if DEBUG_PRINT_GUI=1 then
+			WScript.Echo string
+		end If
+	else
+	'CUI‹N“®‚Ìê‡
+		WScript.Echo string
+	end If
+End Function
+'========================================================================
+Class LogClass
+     Private m_loglevel
+     Public Property Let Loglevel(Value)
+         m_loglevel = Value
+     End Property
+    Private Sub Class_Initialize()
+         m_loglevel=2
+     End Sub
+     Public Sub e(string)
+     	if m_loglevel >= 0 then
+         	logPrint2 string
+         end if
+     End Sub
+     Public Sub w(string)
+     	if m_loglevel >= 1 then
+        	logPrint2 string
+        end if
+     End Sub
+     Public Sub i(string)
+     	if m_loglevel >= 2 then
+			logPrint2 string
+         end if
+     End Sub
+     Public Sub d(string)
+     	if m_loglevel >= 3 then
+			logPrint2 string
+        end if
+     End Sub
 
+End Class
+
+Dim Log
+Set Log = new LogClass
 '========================================================================
 function GetArgString(objWshNamed , name ,def_val )
 	val	= def_val
@@ -54,20 +99,20 @@ Function run_command(cmd)
 	Set objWShell = CreateObject("WScript.Shell")
 
 	objWShell.CurrentDirectory = WorkDir
-	DebugPrint "CMD= " & cmd
+	Log.d "CMD= " & cmd
 	'objWShell.Run cmd, vbNormalFocus, False
 	'objWShell.Run cmd, vbNormalFocus, True
 
 	Set objExec = objWShell.Exec(cmd)
 	Do While objExec.Status = 0
 		Do Until objExec.StdOut.AtEndOfStream
-			DebugPrint objExec.StdOut.ReadLine
+			Log.d objExec.StdOut.ReadLine
 		Loop
 	    WScript.Sleep 100
 	Loop
  
  	Do Until objExec.StdOut.AtEndOfStream
-		DebugPrint objExec.StdOut.ReadLine
+		Log.d objExec.StdOut.ReadLine
 	Loop
  
 	objWShell = none

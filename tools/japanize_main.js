@@ -107,6 +107,13 @@ SetCurrDir(SCRIPT_DIR);
 //get debug parameter
 DEBUG_PRINT			= GetArgOnOff(objWshNamed	,"dbg"		,"OFF"				);
 DEBUG_PRINT_GUI		= GetArgOnOff(objWshNamed	,"dbg_gui"	,"OFF"				);
+
+
+if( DEBUG_PRINT== 1)
+{
+	Log.Loglevel = 3;
+}
+
 //=======================================================================================
 //
 //	replace for jpn device
@@ -120,7 +127,7 @@ function replaceProp(src,dst)
 
 	for(i=0;i<(BUILD_PROP_REP_CONF.length/2 -1);i++)	//exclude dummy line
 	{
-		DebugPrint( "[replace prop] :"+BUILD_PROP_REP_CONF[i*2] + " -> "+ BUILD_PROP_REP_CONF[i*2 +1]  );
+		Log.d( "[replace prop] :"+BUILD_PROP_REP_CONF[i*2] + " -> "+ BUILD_PROP_REP_CONF[i*2 +1]  );
 
 		val =val.replace(new RegExp(BUILD_PROP_REP_CONF[i*2]+"=.*","g"),
 							BUILD_PROP_REP_CONF[i*2]+"="+BUILD_PROP_REP_CONF[i*2 +1]);
@@ -143,7 +150,7 @@ function replaceUpdateScript(src,dst)
 	var val = getTextFile( src ,"euc-jp");
 	for(i=0;i<(UPDATE_SCRIPT_CONF.length/2 -1);i++)	//exclude dummy line
 	{
-		DebugPrint( "[replaceUpdateScript] :"+UPDATE_SCRIPT_CONF[i*2] + " -> "+ UPDATE_SCRIPT_CONF[i*2 +1]  );
+		Log.d( "[replaceUpdateScript] :"+UPDATE_SCRIPT_CONF[i*2] + " -> "+ UPDATE_SCRIPT_CONF[i*2 +1]  );
 		val =String(val).replace(new RegExp(UPDATE_SCRIPT_CONF[i*2])	,UPDATE_SCRIPT_CONF[(i*2)+1]);
 	}
 	outputTextFile(dst,val ,"euc-jp");
@@ -241,7 +248,7 @@ function getFramworkResApk(zip,dst)
 /*framework-resをデコード処理*/
 function decodeFramworkResApk(src,dst)
 {
-	DebugPrint( "[decodeFramworkResApk] enter");
+	Log.d( "[decodeFramworkResApk] enter");
 	//java -jar ..\tools\apktool.jar d framework-res.apk framework-res
 	var cmd = APKTOOL + " d " + src + " "+ dst;
 	run_command(cmd);
@@ -353,29 +360,61 @@ function japanize_process()
 		cleanup_work();
 		WScript.quit();
 	}
-	DebugPrint(zip_name);
+	Log.i( "\n****処理を開始します" );
+	Log.i("Input File : " + zip_name + ".zip");
 
+	Log.i( "\n****build prop convert for" + DEVICE_NAME );
 	getBuildProp(USER_ZIP,USER_DIR);
 	replaceProp(WORK_BUILD_PROP,WORK_BUILD_PROP);	//debug
+
+	Log.i( "\n****updater-script convert for" + DEVICE_NAME );
 
 	getUpdaterScript(USER_ZIP,USER_DIR);
 	replaceUpdateScript(WORK_UPDATER_SCRIPT,WORK_UPDATER_SCRIPT);
 
+	Log.i( "\n****framwork-res.apkをデコードします" );
+
 	getFramworkResApk(USER_ZIP,USER_DIR);
 	decodeFramworkResApk(WORK_FRAMEWORK_RES_APK,TMP_FRAMEWORK_DIR);
 	
+	Log.i( "\n****framwork-res.apkのFelica対応をします" );
 	addFelicaResouceItem(TMP_ARRAYS_XML,TMP_ARRAYS_XML);
 
+	Log.i( "\n****framwork-res.apkをエンコードします" );
 	buildFramworkResApk(TMP_FRAMEWORK_DIR,TMP_FRAMEWORK_APK,WORK_FRAMEWORK_RES_APK);
 
 	//apply diff files
-	AddFileToZip(USER_ZIP,DIFF_DIR+"\\files\\*");
+
+	Log.i( "\n****差分ファイルを適用します" );
+	for(i=0;i<(DIFF_DIR_CONF.length-1);i++)	//exclude dummy line
+	{
+		var diff_dir = objFso.BuildPath(DIFF_DIR	, DIFF_DIR_CONF[i]);
+		//Log.d( "update from " + diff_dir );
+		if(objFso.FolderExists(diff_dir))
+		{
+			var src = objFso.BuildPath(diff_dir,"*");
+			Log.d( "update from " + src );
+			AddFileToZip(USER_ZIP, src );
+		}
+		else
+		{
+			Log.d( "not exist " + diff_dir[i] );
+		}
+	}
+	
+	Log.i( "\n****変換したファイルを適用します" );
 	//apply japanize files
 	AddFileToZip(USER_ZIP,USER_DIR+"\\*");
 
-	var outzip = objFso.BuildPath(OUT_DIR, zip_name+"-converted-"+DEVICE_NAME+".zip");
+	Log.i( "\n****CWM update zipを作成します" );
+	var outbase = zip_name+"-for-"+DEVICE_NAME;
+	var outzip = objFso.BuildPath(OUT_DIR, outbase+".zip");
 	signZip(USER_ZIP,outzip)
 
+	Log.i( "\n****作業ファイルのクリーンアップします" );
 	//cleanup
 	cleanup_work();
+	Log.i("\n****処理が完了しました。出力先は\n"+ outzip +"\nです"); 
+	Log.i( "お疲れ様でした！" );
+	
 }
