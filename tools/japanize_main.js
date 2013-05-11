@@ -488,10 +488,8 @@ function japanize_process()
 		}
 	}
 	
-	//GGAPSをマージ　実装中
+	//GGAPSをマージ
 	merge_ggaps();
-	
-	Wscript.quit(1);
 	
 	progressPrint( "変換したファイルを適用します" );
 	//apply japanize files
