@@ -458,13 +458,13 @@ function japanize_process()
 	progressPrint( "framwork-res.apkをデコードします" );
 
 	getFramworkResApk(USER_ZIP,USER_DIR);
-//	decodeFramworkResApk(WORK_FRAMEWORK_RES_APK,TMP_FRAMEWORK_DIR);
+	decodeFramworkResApk(WORK_FRAMEWORK_RES_APK,TMP_FRAMEWORK_DIR);
 	
 	progressPrint( "framwork-res.apkのFelica対応をします" );
-//	addFelicaResouceItem(TMP_ARRAYS_XML,TMP_ARRAYS_XML);
+	addFelicaResouceItem(TMP_ARRAYS_XML,TMP_ARRAYS_XML);
 
 	progressPrint( "framwork-res.apkをエンコードします" );
-//	buildFramworkResApk(TMP_FRAMEWORK_DIR,TMP_FRAMEWORK_APK,WORK_FRAMEWORK_RES_APK);
+	buildFramworkResApk(TMP_FRAMEWORK_DIR,TMP_FRAMEWORK_APK,WORK_FRAMEWORK_RES_APK);
 
 	//apply diff files
 
