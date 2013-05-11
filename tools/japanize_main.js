@@ -169,6 +169,48 @@ function addFelicaResouceItem(src,dst)
 	val =String(val).replace(/<item>clock</,"<item>clock</item>\n<item>felica_lock<");
 	outputTextFile(dst,val	,"utf-8" );
 }
+//正攻法でfelica_lockを追加
+function addFelicaResouceItemByDOM(src,dst)
+{
+	var objXML, fileXML;
+	var nodes, node, items, item, mesg
+	var isExist=0;
+
+	objXML = WScript.CreateObject("MSXML.DOMDocument");
+	objXML.load(src);
+
+	nodes = objXML.getElementsByTagName("string-array");
+
+	for (i = 0; i < nodes.length; i++)
+	{
+		node = nodes[i];
+
+		id = node.getAttribute("name")
+		if(id=="config_statusBarIcons")
+		{
+			items = node.childNodes;
+			for (j = 0; j < items.length; j++)
+			{
+				item = items[j];
+				Log.d(item.nodeName + ':' + item.firstChild.nodeValue);
+				if(item.firstChild.nodeValue== "felica_lock")
+				{
+					Log.d("detect felica_lock");
+					isExist=1;
+				}
+			}
+			if(isExist==0)
+			{
+				Log.d("add felica_lock");
+				newel=objXML.createElement("item");
+				newel.appendChild( objXML.createTextNode("felica_lock") );
+				node.appendChild(newel);
+			}
+			break;
+		}
+	}
+	objXML.save( dst );
+}
 //=======================================================================================
 //
 //	file access
@@ -458,12 +500,13 @@ function japanize_process()
 	replaceUpdateScript(WORK_UPDATER_SCRIPT,WORK_UPDATER_SCRIPT);
 
 	progressPrint( "framwork-res.apkをデコードします" );
-
+	
 	getFramworkResApk(USER_ZIP,USER_DIR);
 	decodeFramworkResApk(WORK_FRAMEWORK_RES_APK,TMP_FRAMEWORK_DIR);
 	
 	progressPrint( "framwork-res.apkのFelica対応をします" );
-	addFelicaResouceItem(TMP_ARRAYS_XML,TMP_ARRAYS_XML);
+	//addFelicaResouceItem(TMP_ARRAYS_XML,TMP_ARRAYS_XML);
+	addFelicaResouceItemByDOM(TMP_ARRAYS_XML,TMP_ARRAYS_XML);
 
 	progressPrint( "framwork-res.apkをエンコードします" );
 	buildFramworkResApk(TMP_FRAMEWORK_DIR,TMP_FRAMEWORK_APK,WORK_FRAMEWORK_RES_APK);
