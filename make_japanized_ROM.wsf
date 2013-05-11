@@ -47,7 +47,7 @@
 		<!-- vbs util -->
 		<script language="VBScript" src="tools/japanize_util.vbs"/>
 		<!-- japanize configration -->
-		<script language="JScript" src="diff/sc03e/config_sc03e.js"/>
+		<script language="JScript" src="diff/sc03e/config_sc03e_no_One-seg.js"/>
 		<!-- japanize process -->
 		<script language="JScript" src="tools/japanize_main.js"/>
 		<!-- main process -->
