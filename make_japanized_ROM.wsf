@@ -58,12 +58,26 @@
 		</script>
 	</job>
 
-
+<!-- ============================================================================================ -->
+	<job id="ggaps">
+		<!-- vbs util -->
+		<script language="VBScript" src="tools/japanize_util.vbs"/>
+		<!-- japanize configration (dummmy)-->
+		<script language="JScript" src="ggaps/config_ggaps.js"/>
+		<!-- japanize process -->
+		<script language="JScript" src="tools/japanize_main.js"/>
+		<!-- main process -->
+		<script language="JScript">
+		<![CDATA[
+		 	ggaps_merge_only();
+		]]>
+		</script>
+	</job>
 <!-- ============================================================================================ -->
 	<job id="show_herder">
 <resource id="header">
 *******************************************************************************
-* MAKE JAPANIZE ROM V1.0.0
+* MAKE JAPANIZE ROM V1.1.0
 *
 *
 *                                                                    By ma34s

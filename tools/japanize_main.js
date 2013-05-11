@@ -315,7 +315,7 @@ function merge_ggaps()
 	if( zip_path == null )
 	{
 		Log.d("not detect ggaps zip");
-		return ; //do nothing
+		return 1; //do nothing
 	}
 
 	progressPrint( "ggpsを統合します" );
@@ -340,6 +340,8 @@ function merge_ggaps()
 
 	//	ggaps/* copy to user/
 	objFso.CopyFolder( objFso.BuildPath(WORK_GGAPS_DIR	, "*") , USER_DIR,true);
+
+	return 0
 }
 //=======================================================================================
 //
@@ -489,14 +491,18 @@ function japanize_process()
 	}
 	
 	//GGAPSをマージ
-	merge_ggaps();
+	var ggasp=""
+	if(merge_ggaps()== 0 )
+	{
+		ggasp="-ggaps";
+	}
 	
 	progressPrint( "変換したファイルを適用します" );
 	//apply japanize files
 	AddFileToZip(USER_ZIP,USER_DIR+"\\*");
 
 	progressPrint( "CWM update zipを作成します" );
-	var outbase = zip_name+"-for-"+DEVICE_NAME;
+	var outbase = zip_name+"-for-"+DEVICE_NAME+ggasp;
 	var outzip = objFso.BuildPath(OUT_DIR, outbase+".zip");
 	signZip(USER_ZIP,outzip)
 
@@ -507,4 +513,48 @@ function japanize_process()
 	Log.i( "出力先は\n"+ outzip +"\nです" );
 	Log.i( "お疲れ様でした！" );
 	
+}
+
+
+//------------------------------------------------------------------
+function ggaps_merge_only()
+{
+	//copy to work from user seleced zip here
+
+	var zip_name = prepear_work();
+	
+	if(zip_name=="")
+	{
+		cleanup_work();
+		WScript.quit();
+	}
+	progressPrint( "Starrt ggaps merge" );
+	Log.i("Input File : " + zip_name + ".zip");
+
+
+	getUpdaterScript(USER_ZIP,USER_DIR);
+	replaceUpdateScript(WORK_UPDATER_SCRIPT,WORK_UPDATER_SCRIPT);
+	//apply diff files
+
+	//GGAPSをマージ
+	var ggasp=""
+	if(merge_ggaps()== 0 )
+	{
+		ggasp="-ggaps";
+	}
+	
+	//apply japanize files
+	AddFileToZip(USER_ZIP,USER_DIR+"\\*");
+
+	progressPrint( "CWM update zipを作成します" );
+	var outbase = zip_name+ggasp;
+	var outzip = objFso.BuildPath(OUT_DIR, outbase+".zip");
+	signZip(USER_ZIP,outzip)
+
+	progressPrint( "作業ファイルのクリーンアップします" );
+	//cleanup
+	cleanup_work();
+	progressPrint("処理が完了しました"); 
+	Log.i( "出力先は\n"+ outzip +"\nです" );
+	Log.i( "お疲れ様でした！" );
 }
