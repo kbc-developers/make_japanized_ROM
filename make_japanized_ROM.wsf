@@ -1,10 +1,6 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 
 <package>
-
-
-
-
 	<job id="sc02e">
 		<!-- vbs util -->
 		<script language="VBScript" src="tools/japanize_util.vbs"/>
@@ -15,9 +11,7 @@
 		<!-- main process -->
 		<script language="JScript">
 		<![CDATA[
-			DebugPrint( "開始♪ :"+SCRIPT_DIR  );
 		 	japanize_process();
-		 	DebugPrint( "終了♪");
 		]]>
 		</script>
 	</job>
@@ -29,11 +23,9 @@
 		<!-- japanize process -->
 		<script language="JScript" src="tools/japanize_main.js"/>
 		<!-- main process -->
-		<script language="JScript">
+		<script language="JScript"> 
 		<![CDATA[
-			DebugPrint( "開始♪ :"+SCRIPT_DIR  );
 		 	japanize_process();
-		 	DebugPrint( "終了♪");
 		]]>
 		</script>
 	</job>
@@ -47,9 +39,7 @@
 		<!-- main process -->
 		<script language="JScript">
 		<![CDATA[
-			DebugPrint( "開始♪ :"+SCRIPT_DIR  );
 		 	japanize_process();
-		 	DebugPrint( "終了♪");
 		]]>
 		</script>
 	</job>
@@ -63,13 +53,13 @@
 		<!-- main process -->
 		<script language="JScript">
 		<![CDATA[
-			DebugPrint( "開始♪ :"+SCRIPT_DIR  );
 		 	japanize_process();
-		 	DebugPrint( "終了♪");
 		]]>
 		</script>
 	</job>
 
+
+<!-- ============================================================================================ -->
 	<job id="show_herder">
 <resource id="header">
 *******************************************************************************
@@ -84,9 +74,6 @@
 		]]>
 		</script>
 	</job>
-
-
-
 
 </package>
 

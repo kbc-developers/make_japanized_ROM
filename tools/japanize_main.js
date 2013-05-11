@@ -69,10 +69,10 @@ var SCRIPT_DIR	= String(WScript.ScriptFullName).replace(WScript.ScriptName,"");
 
 //tool path
 var TOOL_DIR	= objFso.BuildPath(SCRIPT_DIR	, "tools");
-var EXE_7z		= objFso.BuildPath(TOOL_DIR		, "7z.exe");
-var APKTOOL		= "java -jar " + objFso.BuildPath(TOOL_DIR		, "apktool.jar");
+var EXE_7z		= escape_path(objFso.BuildPath(TOOL_DIR		, "7z.exe"));
+var APKTOOL		= "java -jar " + escape_path(objFso.BuildPath(TOOL_DIR		, "apktool.jar"));
 
-var SIGNAPK_JAR			= "java -jar " + objFso.BuildPath(TOOL_DIR		, "signapk.jar");
+var SIGNAPK_JAR			= "java -jar " + escape_path(objFso.BuildPath(TOOL_DIR		, "signapk.jar"));
 var TESTKEY_X509_PEM	= objFso.BuildPath(TOOL_DIR		, "testkey.x509.pem");
 var TESTKEY_PK8			= objFso.BuildPath(TOOL_DIR		, "testkey.pk8");
 
@@ -207,16 +207,19 @@ function outputTextFile( path , val ,encoding)
 /*zipへファイル追加処理*/
 function AddFileToZip(zip,src)
 {
-	///@todo
-	//var cmd = EXE_7z +" a " + zip + " " + src + " -r";
-	var cmd = EXE_7z +" u " + zip + " " + src + " -r -ssc";
+	var cmd = EXE_7z +" u " + 
+			escape_path(zip) + 	" " + 
+			escape_path(src) + " -r -ssc";
 	run_command(cmd);
 }
 //------------------------------------------------------------------
 /*zipを指定して、指定パスのファイルのみ取り出す処理*/
 function getFileFromZip(zip,dst,path)
 {
-	var cmd = EXE_7z +" x " + zip + " -o"+dst + " " + path + " -r -aoa";
+	var cmd = EXE_7z +" x " +
+	escape_path(zip) + " -o" + 
+	escape_path(dst) + " " + 
+	escape_path(path) + " -r -aoa";
 	run_command(cmd);
 }
 //------------------------------------------------------------------
@@ -250,7 +253,7 @@ function decodeFramworkResApk(src,dst)
 {
 	Log.d( "[decodeFramworkResApk] enter");
 	//java -jar ..\tools\apktool.jar d framework-res.apk framework-res
-	var cmd = APKTOOL + " d " + src + " "+ dst;
+	var cmd = APKTOOL + " d " + escape_path(src) + " "+ escape_path(dst);
 	run_command(cmd);
 }
 //------------------------------------------------------------------
@@ -263,11 +266,11 @@ function buildFramworkResApk(src_dir,tmp_apk,dst_apk)
 	del ..\work1\system\framework\framework-res.apk
 	copy framework-res.apk ..\work1\system\framework
 	*/
-	var resources = objFso.BuildPath(src_dir,"build\\apk\\resources.arsc");
+	var resources = escape_path(objFso.BuildPath(src_dir,"build\\apk\\resources.arsc"));
 
-	var cmd = APKTOOL + " b " + src_dir + " "+ tmp_apk;
+	var cmd = APKTOOL + " b " + escape_path(src_dir) + " "+ escape_path(tmp_apk);
 	run_command(cmd);
-	cmd = EXE_7z +" u -tzip -mx=0 " + dst_apk + " " + resources;
+	cmd = EXE_7z +" u -tzip -mx=0 " + escape_path(dst_apk) + " " + resources;
 
 	run_command(cmd);
 }
@@ -275,7 +278,11 @@ function buildFramworkResApk(src_dir,tmp_apk,dst_apk)
 /*signed zip処理*/
 function signZip(src,dst)
 {
-	var cmd = SIGNAPK_JAR + " " + TESTKEY_X509_PEM + " " + TESTKEY_PK8 + " " +src+ " " + dst;
+	var cmd =	SIGNAPK_JAR + " " +
+				escape_path(TESTKEY_X509_PEM )+ " " +
+				escape_path(TESTKEY_PK8) + " " +
+				escape_path(src)+ " " + 
+				escape_path(dst);
 	run_command(cmd);
 }
 
@@ -348,6 +355,16 @@ function cleanup_work()
 //	main process
 //
 //=======================================================================================
+function progressPrint( string )
+{
+	var str =  "\n";
+
+	str += "\n"+ "-----------------------------------------------";
+	str += "\n"+ " " + string;
+	str += "\n"+ "-----------------------------------------------";
+	str += "\n";
+	Log.i(str);
+}
 //------------------------------------------------------------------
 function japanize_process()
 {
@@ -360,32 +377,32 @@ function japanize_process()
 		cleanup_work();
 		WScript.quit();
 	}
-	Log.i( "\n****処理を開始します" );
+	progressPrint( "Starrt Japanize for "  + DEVICE_NAME  );
 	Log.i("Input File : " + zip_name + ".zip");
 
-	Log.i( "\n****build prop convert for" + DEVICE_NAME );
+	progressPrint("build prop convert for" + DEVICE_NAME );
 	getBuildProp(USER_ZIP,USER_DIR);
 	replaceProp(WORK_BUILD_PROP,WORK_BUILD_PROP);	//debug
 
-	Log.i( "\n****updater-script convert for" + DEVICE_NAME );
+	progressPrint( "updater-script convert for" + DEVICE_NAME );
 
 	getUpdaterScript(USER_ZIP,USER_DIR);
 	replaceUpdateScript(WORK_UPDATER_SCRIPT,WORK_UPDATER_SCRIPT);
 
-	Log.i( "\n****framwork-res.apkをデコードします" );
+	progressPrint( "framwork-res.apkをデコードします" );
 
 	getFramworkResApk(USER_ZIP,USER_DIR);
 	decodeFramworkResApk(WORK_FRAMEWORK_RES_APK,TMP_FRAMEWORK_DIR);
 	
-	Log.i( "\n****framwork-res.apkのFelica対応をします" );
+	progressPrint( "framwork-res.apkのFelica対応をします" );
 	addFelicaResouceItem(TMP_ARRAYS_XML,TMP_ARRAYS_XML);
 
-	Log.i( "\n****framwork-res.apkをエンコードします" );
+	progressPrint( "framwork-res.apkをエンコードします" );
 	buildFramworkResApk(TMP_FRAMEWORK_DIR,TMP_FRAMEWORK_APK,WORK_FRAMEWORK_RES_APK);
 
 	//apply diff files
 
-	Log.i( "\n****差分ファイルを適用します" );
+	progressPrint("差分ファイルを適用します" );
 	for(i=0;i<(DIFF_DIR_CONF.length-1);i++)	//exclude dummy line
 	{
 		var diff_dir = objFso.BuildPath(DIFF_DIR	, DIFF_DIR_CONF[i]);
@@ -402,19 +419,19 @@ function japanize_process()
 		}
 	}
 	
-	Log.i( "\n****変換したファイルを適用します" );
+	progressPrint( "変換したファイルを適用します" );
 	//apply japanize files
 	AddFileToZip(USER_ZIP,USER_DIR+"\\*");
 
-	Log.i( "\n****CWM update zipを作成します" );
+	progressPrint( "CWM update zipを作成します" );
 	var outbase = zip_name+"-for-"+DEVICE_NAME;
 	var outzip = objFso.BuildPath(OUT_DIR, outbase+".zip");
 	signZip(USER_ZIP,outzip)
 
-	Log.i( "\n****作業ファイルのクリーンアップします" );
+	progressPrint( "作業ファイルのクリーンアップします" );
 	//cleanup
 	cleanup_work();
-	Log.i("\n****処理が完了しました。出力先は\n"+ outzip +"\nです"); 
+	progressPrint("処理が完了しました。出力先は\n"+ outzip +"\nです"); 
 	Log.i( "お疲れ様でした！" );
 	
 }

@@ -5,15 +5,7 @@ WorkDir=""
 '========================================================================
 Function DebugPrint(string)
 	if DEBUG_PRINT=1 then
-		if UCase(Right(WScript.FullName, 11)) = "WSCRIPT.EXE" Then
-		'GUI起動の場合
-			if DEBUG_PRINT_GUI=1 then
-				WScript.Echo string
-			end If
-		else
-		'CUI起動の場合
-			WScript.Echo string
-		end If
+		logPrint2 string
 	end if
 End Function
 '========================================================================
@@ -92,6 +84,11 @@ function GetArgOnOff(objWshNamed,name,def_val)
 End Function
 
 '========================================================================
+Function escape_path(path)
+	escape_path = """" & path & """"
+End Function
+
+'========================================================================
 ' JScriptで外部コマンドがうまく同期処理にならなかったのでVBSで
 Function run_command(cmd)
 	Dim objWShell
@@ -99,7 +96,7 @@ Function run_command(cmd)
 	Set objWShell = CreateObject("WScript.Shell")
 
 	objWShell.CurrentDirectory = WorkDir
-	Log.d "CMD= " & cmd
+	Log.d "[CMD] " & cmd
 	'objWShell.Run cmd, vbNormalFocus, False
 	'objWShell.Run cmd, vbNormalFocus, True
 
@@ -108,7 +105,7 @@ Function run_command(cmd)
 		Do Until objExec.StdOut.AtEndOfStream
 			Log.d objExec.StdOut.ReadLine
 		Loop
-	    WScript.Sleep 100
+	    WScript.Sleep 500
 	Loop
  
  	Do Until objExec.StdOut.AtEndOfStream
@@ -122,3 +119,5 @@ End Function
 Function SetCurrDir(dir)
 	WorkDir = dir
 End Function
+
+
