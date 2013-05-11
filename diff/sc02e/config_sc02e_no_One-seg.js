@@ -37,11 +37,11 @@ var BUILD_PROP_ADD_CONF = new Array(
 	for updeter-script
 **---------------------------------------------------------------------------*/
 var UPDATE_SCRIPT_CONF = new Array(
-	"GT-N7105"	,"SC-02",
+	"GT-N7105"	,"SC-02E",
 	"t0lte"		,"sc02e",
-	"SGH-I317"	,"SC-02",
+	"SGH-I317"	,"SC-02E",
 	"t0lteatt"	,"sc02e",
-	"SGH-T889"	,"SC-02",
+	"SGH-T889"	,"SC-02E",
 	"t0ltetmo"	,"sc02e",
 
 	//-------------------------------------
