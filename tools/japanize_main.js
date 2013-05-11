@@ -18,8 +18,6 @@ var TRISTATE_FALSE      =  0;   // ASCII
 var TRISTATE_USEDEFAULT = -2;   // システムデフォルト
 //==================================================================
 // ADODB.Stream
-		// STREAMTYPEENUM
-		// HTTP://MSDN.MICROSOFT.COM/JA-JP/LIBRARY/CC389884.ASPX
 var ADTYPEBINARY = 1; // バイナリ
 var ADTYPETEXT   = 2; // テキスト
 
@@ -59,6 +57,10 @@ Memo:
   |  |  +temp/
   |  |  |   +framework-res/
   |  |  |   +framework-res-tmp.apk
+  |  |  +ggaps/
+  |  |  |   +META-INF
+  |  |  |   +system
+  |  |  |   +xxx
   |  |  +user.zip  (copy from user)
   |  + complete.zip
   + make_japanized_ROM.wsf
@@ -82,6 +84,7 @@ var WORK_DIR	= objFso.BuildPath(OUT_DIR		, "work");
 var USER_DIR	= objFso.BuildPath(WORK_DIR		, "user");
 var TEMP_DIR	= objFso.BuildPath(WORK_DIR		, "temp");
 
+
 var USER_ZIP	= objFso.BuildPath(WORK_DIR		, "user.zip");
 
 var BUILD_PROP			= "system/build.prop";
@@ -102,6 +105,10 @@ var TMP_FRAMEWORK_APK		= objFso.BuildPath(TEMP_DIR				, "framework-res.apk"		).r
 var DIFF_DIR= objFso.BuildPath(SCRIPT_DIR	, "diff");
 var DIFF_DIR=objFso.BuildPath(DIFF_DIR,DEVICE_DIR)
 
+//ggaps work
+var GGAPS_DIR	= objFso.BuildPath(SCRIPT_DIR		, "ggaps");
+var WORK_GGAPS_DIR	= objFso.BuildPath(WORK_DIR		, "ggaps");
+var GAPS_UPDATER_SCRIPT		= objFso.BuildPath(WORK_GGAPS_DIR				, UPDATER_SCRIPT			).replace(new RegExp("\\/","g"),"\\");
 
 SetCurrDir(SCRIPT_DIR);
 //get debug parameter
@@ -139,8 +146,6 @@ function replaceProp(src,dst)
 		val =val.replace(new RegExp(BUILD_PROP_ADD_CONF[i*2]+"=.*","g"),"");
 		val	+= BUILD_PROP_ADD_CONF[i*2]+"="+BUILD_PROP_ADD_CONF[i*2 +1]+"\n";
 	}
-
-
 	outputTextFile(dst,val,"euc-jp");
 }
 
@@ -223,6 +228,15 @@ function getFileFromZip(zip,dst,path)
 	run_command(cmd);
 }
 //------------------------------------------------------------------
+/*zipを指定して、指定パスのファイルのみ取り出す処理*/
+function extractZipAll(zip,dst)
+{
+	var cmd = EXE_7z +" x " +
+	escape_path(zip) + " -o" + 
+	escape_path(dst) + " -r -aoa";
+	run_command(cmd);
+}
+//------------------------------------------------------------------
 /*zipを指定して、build.propのみ取り出す処理*/
 function getBuildProp(zip,dst)
 {
@@ -232,7 +246,6 @@ function getBuildProp(zip,dst)
 /*zipを指定して、updater-scriptのみ取り出す処理*/
 function getUpdaterScript(zip,dst)
 {
-	//META-INF\com\google\android
 	getFileFromZip(zip,dst,UPDATER_SCRIPT);
 }
 //------------------------------------------------------------------
@@ -252,7 +265,6 @@ function getFramworkResApk(zip,dst)
 function decodeFramworkResApk(src,dst)
 {
 	Log.d( "[decodeFramworkResApk] enter");
-	//java -jar ..\tools\apktool.jar d framework-res.apk framework-res
 	var cmd = APKTOOL + " d " + escape_path(src) + " "+ escape_path(dst);
 	run_command(cmd);
 }
@@ -260,12 +272,6 @@ function decodeFramworkResApk(src,dst)
 /*framework-resをビルド処理*/
 function buildFramworkResApk(src_dir,tmp_apk,dst_apk)
 {
-	/*
-	java -jar ..\tools\apktool.jar b framework-res framework-res-tmp.apk
-	..\tools\7z u -tzip -mx=0 framework-res.apk .\framework-res\build\apk\resources.arsc
-	del ..\work1\system\framework\framework-res.apk
-	copy framework-res.apk ..\work1\system\framework
-	*/
 	var resources = escape_path(objFso.BuildPath(src_dir,"build\\apk\\resources.arsc"));
 
 	var cmd = APKTOOL + " b " + escape_path(src_dir) + " "+ escape_path(tmp_apk);
@@ -285,7 +291,56 @@ function signZip(src,dst)
 				escape_path(dst);
 	run_command(cmd);
 }
+//=======================================================================================
+//
+//	ggaps merge
+//
+//=======================================================================================
+function merge_ggaps()
+{
+	var zip_path = null;
+	var files = new Enumerator( objFso.GetFolder(GGAPS_DIR).files );
+	for (; !files.atEnd(); files.moveNext()){
+		var file_path = files.item().path;  //ファイルのパス;
 
+		Log.d("[detect] fiile: " + file_path);
+		if( objFso.GetExtensionName(file_path) == "zip" )
+		{
+			Log.d("[detect] zip : " + file_path);
+			zip_path = file_path;
+			break;
+		}
+	}
+
+	if( zip_path == null )
+	{
+		Log.d("not detect ggaps zip");
+		return ; //do nothing
+	}
+
+	progressPrint( "ggpsを統合します" );
+	Log.i("src file : " + zip_path);
+	
+	getUpdaterScript(zip_path,WORK_GGAPS_DIR);
+	var text 		 = getTextFile( GAPS_UPDATER_SCRIPT ,"euc-jp");
+	var updateScript = getTextFile( WORK_UPDATER_SCRIPT ,"euc-jp");
+
+	text =text.replace(new RegExp("package_extract_dir\\(.*system\".*,","g"),
+							"package_extract_dir(\"system_ggaps\" ,"	);
+	updateScript +=  "\n" + text;
+	
+	//add script to user/META..../updater-script
+	outputTextFile(WORK_UPDATER_SCRIPT,updateScript ,"euc-jp");
+	
+	extractZipAll(zip_path,WORK_GGAPS_DIR);
+	// X system -> system_ggaps  rename
+	objFso.GetFolder(objFso.BuildPath(WORK_GGAPS_DIR	, "system")).Name	= "system_ggaps";
+
+	objFso.GetFolder(objFso.BuildPath(WORK_GGAPS_DIR	, "META-INF")).Delete();
+
+	//	ggaps/* copy to user/
+	objFso.CopyFolder( objFso.BuildPath(WORK_GGAPS_DIR	, "*") , USER_DIR,true);
+}
 //=======================================================================================
 //
 //	other
@@ -302,21 +357,22 @@ function prepear_work()
 {
 
 	if (objWshUnnamed.Count == 0)
-	{	WScript.Echo("ERROR! Please input zip");
+	{	
+		Log.e("ERROR! Please input zip");
 		return "";
 	}
 	var rom_zip = objWshUnnamed.Item(0);
 
 	if(!objFso.FileExists(rom_zip))
 	{
-		WScript.Echo("ERROR! not exist rom");
+		Log.e("ERROR! not exist rom");
 		return "";
 	}
 
 	var ext = objFso.GetExtensionName(rom_zip);
 	if(ext != "zip" )
 	{
-		WScript.Echo("ERROR! not .zip file");
+		Log.e("ERROR! not .zip file");
 		return "";
 	}
 
@@ -325,10 +381,8 @@ function prepear_work()
 	{
 		objFso.CreateFolder(OUT_DIR);
 	}
-	else
-	{
-		cleanup_work();
-	}
+	cleanup_work();
+
 	objFso.CreateFolder(WORK_DIR);
 	objFso.CreateFolder(USER_DIR);
 	
@@ -349,6 +403,19 @@ function cleanup_work()
 	{
 		objFso.DeleteFolder(WORK_DIR,true);
 	}
+	
+	var retry = 0;
+	while(objFso.FolderExists(WORK_DIR))
+	{
+		if( retry == 10 )
+		{
+			Lod.e("work dirを削除出来ません");
+			Wscript.Quit(1);
+		}
+		WScript.Sleep(500);
+		retry++;
+	}
+	
 }
 //=======================================================================================
 //
@@ -361,8 +428,7 @@ function progressPrint( string )
 
 	str += "\n"+ "-----------------------------------------------";
 	str += "\n"+ " " + string;
-	str += "\n"+ "-----------------------------------------------";
-	str += "\n";
+	str += "\n"+ "-----------------------------------------------\n";
 	Log.i(str);
 }
 //------------------------------------------------------------------
@@ -392,13 +458,13 @@ function japanize_process()
 	progressPrint( "framwork-res.apkをデコードします" );
 
 	getFramworkResApk(USER_ZIP,USER_DIR);
-	decodeFramworkResApk(WORK_FRAMEWORK_RES_APK,TMP_FRAMEWORK_DIR);
+//	decodeFramworkResApk(WORK_FRAMEWORK_RES_APK,TMP_FRAMEWORK_DIR);
 	
 	progressPrint( "framwork-res.apkのFelica対応をします" );
-	addFelicaResouceItem(TMP_ARRAYS_XML,TMP_ARRAYS_XML);
+//	addFelicaResouceItem(TMP_ARRAYS_XML,TMP_ARRAYS_XML);
 
 	progressPrint( "framwork-res.apkをエンコードします" );
-	buildFramworkResApk(TMP_FRAMEWORK_DIR,TMP_FRAMEWORK_APK,WORK_FRAMEWORK_RES_APK);
+//	buildFramworkResApk(TMP_FRAMEWORK_DIR,TMP_FRAMEWORK_APK,WORK_FRAMEWORK_RES_APK);
 
 	//apply diff files
 
@@ -411,13 +477,21 @@ function japanize_process()
 		{
 			var src = objFso.BuildPath(diff_dir,"*");
 			Log.d( "update from " + src );
-			AddFileToZip(USER_ZIP, src );
+
+			//AddFileToZip(USER_ZIP, src );
+			objFso.CopyFolder( src , USER_DIR,true);
+			objFso.CopyFile( src , USER_DIR,true);
 		}
 		else
 		{
 			Log.d( "not exist " + diff_dir[i] );
 		}
 	}
+	
+	//GGAPSをマージ　実装中
+	merge_ggaps();
+	
+	Wscript.quit(1);
 	
 	progressPrint( "変換したファイルを適用します" );
 	//apply japanize files
@@ -431,7 +505,8 @@ function japanize_process()
 	progressPrint( "作業ファイルのクリーンアップします" );
 	//cleanup
 	cleanup_work();
-	progressPrint("処理が完了しました。出力先は\n"+ outzip +"\nです"); 
+	progressPrint("処理が完了しました"); 
+	Log.i( "出力先は\n"+ outzip +"\nです" );
 	Log.i( "お疲れ様でした！" );
 	
 }
