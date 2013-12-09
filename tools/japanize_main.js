@@ -307,7 +307,7 @@ function getFramworkResApk(zip,dst)
 function decodeFramworkResApk(src,dst)
 {
 	Log.d( "[decodeFramworkResApk] enter");
-	var cmd = APKTOOL + " d " + escape_path(src) + " "+ escape_path(dst);
+	var cmd = APKTOOL + " d " + escape_path(src) + " -o "+ escape_path(dst);
 	run_command(cmd);
 }
 //------------------------------------------------------------------
@@ -316,7 +316,7 @@ function buildFramworkResApk(src_dir,tmp_apk,dst_apk)
 {
 	var resources = escape_path(objFso.BuildPath(src_dir,"build\\apk\\resources.arsc"));
 
-	var cmd = APKTOOL + " b " + escape_path(src_dir) + " "+ escape_path(tmp_apk);
+	var cmd = APKTOOL + " b " + escape_path(src_dir) + " -o "+ escape_path(tmp_apk);
 	run_command(cmd);
 	cmd = EXE_7z +" u -tzip -mx=0 " + escape_path(dst_apk) + " " + resources;
 
